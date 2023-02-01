@@ -21,6 +21,10 @@ environment{
 		 echo "${env.adv_choices}"
 		
 		 //sh "printenv | sort"
+		 if(env.choices == "Xen,QT")
+		{
+			echo "Xen and QT cannot be selected together"
+		}
 		
 		 if(env.adv_choices == "Docker")
 		{
