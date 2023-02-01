@@ -24,6 +24,17 @@ environment{
 		 if(env.choices == "Xen,QT")
 		{
 			echo "Xen and QT cannot be selected together"
+			
+			def mutualExChoice = input(
+                            id: 'ExChoice', message: 'Please select either Xen or QT',
+                            parameters: [
+
+                                    string(defaultValue: '',
+                                            description: 'Mutual Exclusion choice',
+                                            name: 'ExChoice'),
+                            
+                            ])
+			echo "Selected choice is: ${mutualExChoice}"
 		}
 		
 		 if(env.adv_choices == "Docker")
