@@ -35,7 +35,7 @@ environment{
                             
                             ])
 			echo "Selected choice is: ${mutualExChoice}"
-			env.choices=${mutualExChoice}
+			env.choices = "${mutualExChoice}"
 		}
 		
 		 if(env.adv_choices == "Docker")
