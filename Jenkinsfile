@@ -1,93 +1,159 @@
 pipeline {
   agent any
-  stages {
-	  
-
-    stage ("Edit")
-    {
-      steps {
-        
-        script {
-	 		       
-	env.feature = input message: 'Please enter the feature you want to build with',
-                             parameters: [string(defaultValue: '',
-                                          description: '',
-                                          name: 'Feature')]
-        echo "Entered feature is "
-	echo "${env.feature}"
-		
-        dir("/home/lakshmi/dell_pods/poky/build/conf") {
-        sh '''#!/bin/bash
 	
-	echo "inside shell"
-	#echo "${env.feature}"
-	input=$(printenv feature)
-	echo "your input"
-	echo "$input"
-       	
-        #Locating the line with mentioned feature
-        line=$(sed -n "/$input/p" local.conf | head -1)
-        echo "$line"
-	
-	
-        
-        #extracting the line numbers 
-        array=()
-        
-	n=$(grep -rin $input | head -1 | awk '{print $1 }' | cut -d: -f 2)
-	echo "Line number is"
-	echo "$n"
-	
-	lines=$(grep -rin $input | head -1 | awk '{print $1}' | cut -d# -f 2)
-	echo "Number of lines to edit is"
-	echo "$lines"
-	
-	
-		
-	        	             
-        #Enabling the mentioned feature for build in local.conf 
-	sum=$n
-	for (( x=1 ; x<=$lines ; x++ )); 
-	do
-		echo "iterator is"	
-	  	echo "$x"
-		sum=$(($sum + 1))
-		echo "$sum"
-    		sed -i "$sum s/#//" local.conf
-		
-	done	 
-	
-	cd /home/lakshmi/dell_pods/poky
-	pwd
-	source oe-init-build-env
-	pwd
-	#rm -rf bitbake.lock
-	
-	
-	#bitbake -c clean core-image-pods
-	bitbake core-image-pods
-	
-	cd /home/lakshmi/dell_pods/poky/build/conf
-	pwd
-	echo "Restroing local.conf"
-	
-	#Disabling the feature after build is complete in local.conf
-	sum1=$n
-        for (( x=1 ; x<=$lines ; x++ )); 
-	do
-		echo "iterator is"	
-	  	echo "$x"
-		sum1=$(($sum1 + 1))
-		echo "$sum"
-    		sed -i "$sum1 s/^/#/" local.conf
-		
-	done	
-        '''
-	}  
-    }
-  }
-   }
-  }
+environment{
+				
+	USER_NAME = "PODS"
+	USER_PWD = "pods"
 }
-Footer
+  stages 
+{  
+   
+    stage ("User Input Stage")
+    {
+	    
+      steps {	 
+	      
+	script {
+		
+                 echo "selected parameter is"		      
+	         echo "${env.choices}"	
+		 echo "${env.adv_choices}"
+		
+		 //sh "printenv | sort"
+		
+		 if(env.adv_choices == "Docker")
+		{
+			echo "Advanced feature selected"
+			//env.getEnvironment().each { name, value -> println "Name: $name -> Value $value" }
+			//input message: 'enter password', parameters: [password(defaultValue: 'value', description: '', name: 'hidden')]
+			//echo "${env.MYVARNAME_USR}"
+			
+			def userCred = input(
+                            id: 'userCred', message: 'Enter the Credentials',
+                            parameters: [
+
+                                    string(defaultValue: '',
+                                            description: 'The Build Password',
+                                            name: 'UserPwd'),
+                            
+                            ])
+			echo "User credential is: ${userCred}"
+			
+			if( "${userCred}" == "${env.USER_PWD}")
+			{
+                		echo "Matched"
+            		} 
+			else
+			{
+              			 echo "Not matched"
+				 return 
+           		}
+		
+			
+		}
+	    
+		dir("/home/lakshmi/dell_pods/poky/build/conf")  
+		  {
+      	        	sh '''#!/bin/bash
+			input=$(printenv choices)
+			input_adv=$(printenv adv_choices)
+			input+="$(echo " ") $input_adv "
+			echo "your input"
+			echo "$input"
+			
+			#Selecting common features and storing it into Properties file
+			n=$(grep -rin "#CO#" local.conf | awk '{print $2 }')
+			echo "Common pattern is"
+			#echo $n
+			x=$(echo $n | sed 's/ /,/g')
+			#echo "x is"
+			echo $x
+			> Properties
+			echo "feature=$x" >> Properties
+			
+			#Selecting Advanced features and storing it into adv_properties file
+			n=$(grep -rin "#AD#" local.conf | awk '{print $2 }')
+			echo "Advanced pattern is"
+			#echo $n
+			y=$(echo $n | sed 's/ /,/g')
+			#echo "x is"
+			echo $y
+			> adv_properties
+			echo "adv_feature=$y" >> adv_properties
+			
+			array=()
+			IFS='+, ' read -ra array <<< $input
+			for i in "${array[@]}"; do
+  				echo "$i"
+			
+			#line=$(sed -n "/$i/p" local.conf | head -1)
+        		#echo "$line"
+		
+			n=$(grep -rin $i local.conf | head -1 | awk '{print $1 }' | cut -d: -f 1)
+			echo "Line number is"
+			echo "$n"
+		
+			lines=$(grep -rin $i local.conf | head -1 | awk '{print $1}' | cut -d# -f 5)
+			echo "Number of lines to edit is"
+			echo "$lines"
+		
+			#Enabling the mentioned feature for build in local.conf 
+			sum=$n
+			for (( x=1 ; x<=$lines ; x++ )); 
+			do
+				echo "iterator is"	
+	  			echo "$x"
+				sum=$(($sum + 1))
+				echo "$sum"
+    				sed -i "$sum s/#//" local.conf
+		
+			done
+			done
+			
+			
+	
+	
+			cd /home/lakshmi/dell_pods/poky/build/conf
+			pwd
+			
+			echo "Restroing local.conf"
+	
+		     for i in "${array[@]}"; do
+  			echo "$i"
+		
+			#line1=$(sed -n "/$i/p" local.conf | head -1)
+        		#echo "$line1"
+		
+			n1=$(grep -rin $i local.conf | head -1 | awk '{print $1 }' | cut -d: -f 1)
+			echo "Line number is"
+			echo "$n1"
+			
+			lines1=$(grep -rin $i local.conf | head -1 | awk '{print $1}' | cut -d# -f 5)
+			echo "Number of lines to edit is"
+			echo "$lines1"
+		
+			#Disabling the mentioned feature for build in local.conf 
+			sum1=$n1
+			for (( x=1 ; x<=$lines1 ; x++ )); 
+			do
+				echo "iterator is"	
+	  			echo "$x"
+				sum1=$(($sum1 + 1))
+				echo "$sum1"
+    				sed -i "$sum1 s/^/#/" local.conf
+			done
+		done
+			
+					
+			'''
+		  }
+		
+		
+		} 
+  }
+  }
+  }
+  
+  }
 
