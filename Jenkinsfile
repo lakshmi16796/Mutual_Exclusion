@@ -46,12 +46,12 @@ environment{
 			//echo "${env.MYVARNAME_USR}"
 			
 			def userCred = input(
-                            id: 'userCred', message: 'Enter the Credentials',
+                            id: 'userCred', message: 'Enter the Credentials to access advanced feature',
                             parameters: [
 
                                     string(defaultValue: '',
                                             description: 'The Build Password',
-                                            name: 'UserPwd'),
+                                            name: 'BuildPwd'),
                             
                             ])
 			echo "User credential is: ${userCred}"
