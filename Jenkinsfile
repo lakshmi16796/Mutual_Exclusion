@@ -110,7 +110,7 @@ environment{
 			echo "Line number is"
 			echo "$n"
 		
-			lines=$(grep -rin $i local.conf | head -1 | awk '{print $1}' | cut -d# -f 5)
+			lines=$(grep -rin $i local.conf | head -1 | awk '{print $1}' | cut -d# -f 3)
 			echo "Number of lines to edit is"
 			echo "$lines"
 		
@@ -145,7 +145,7 @@ environment{
 			echo "Line number is"
 			echo "$n1"
 			
-			lines1=$(grep -rin $i local.conf | head -1 | awk '{print $1}' | cut -d# -f 5)
+			lines1=$(grep -rin $i local.conf | head -1 | awk '{print $1}' | cut -d# -f 3)
 			echo "Number of lines to edit is"
 			echo "$lines1"
 		
