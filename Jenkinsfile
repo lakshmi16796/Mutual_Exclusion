@@ -106,7 +106,7 @@ environment{
 			#line=$(sed -n "/$i/p" local.conf | head -1)
         		#echo "$line"
 		
-			n=$(grep -rin $i local.conf | head -1 )
+			n=$(grep -rin $i local.conf | head -1 | awk '{print $1 }' | cut -d: -f 1)
 			echo "Line number is"
 			echo "$n"
 		
